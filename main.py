@@ -1,15 +1,15 @@
 from gpiozero import DistanceSensor  # Import the DistanceSensor class from the gpiozero library
 from time import sleep  # Import the sleep function from the time module for delay
-import pygame # for audio output
 from acc_script import read_MPU_data 
 import requests as req
+import os
 
 # Initialize the ultrasonic sensor
-
 sensor = DistanceSensor(echo=24, trigger=23)
 
-# initialize player
-pygame.mixer.init()
+
+server_ip_address=os.environ["SERVER_IP_ADDRESS"]
+
 
 def measure_distance() -> int:
 
@@ -27,20 +27,21 @@ while True:
    distance_data=measure_distance()
    sound_name=""
    
-   if distance_data < 5:
+   if abs(giro_data["giro_x"]) > 10 or abs(giro_data["giro_y"]) > 10 or abs(giro_data["giro_z"]) > 10:
+          # ignore the distance data
+          sound_name="picked_up_sound"
+   elif distance_data < 10:
           # the train smashed into something
-          sound_name=""
-
+          sound_name="hurt_sound"
    else:
           # make chuu chuu sounds
-          sound_name=""
-          try:
-              response=req.get(f"http://192.168.1.201:5000/play/{sound_name}")
-              print(response.)
-          except ConnectionRefusedError as err:
-              print(f"an error occured while making the call: {err}")
-       # sound = pygame.mixer.Sound(sound_path)
-       # playing = sound.play()
-       # while playing.get_busy():
-              # pygame.time.delay(100)
+          sound_name="moving_sound"
+          
+       
+   try:
+          response=req.get(f"http://{server_ip_address}:5000/play/train_sounds?filename={sound_name}")
+          print(response)
+   except ConnectionRefusedError as err:
+          print(f"an error occured while making the call: {err}")
+       
    sleep(0.1)

@@ -106,5 +106,9 @@ def read_MPU_data() -> dict:
         MPU_Init()
     
     return giro_data_dict
+    
+# while True:
+    # da=read_MPU_data()
+    # sleep(0.1)
 
         
